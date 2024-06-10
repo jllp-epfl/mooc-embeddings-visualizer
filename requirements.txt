@@ -1,0 +1,11 @@
+wheel
+Werkzeug==2.2.2
+Flask==2.0.2
+Flask-WTF==0.15.1
+jsonpickle==3.0.2
+orjson==3.9.10
+plotly==5.18.0
+pandas>=2.0.3
+olxcleaner==0.2.1
+toml
+flask_cors

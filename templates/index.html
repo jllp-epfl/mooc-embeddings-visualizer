@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="static/utils.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/mainpage.css" />
+    <link rel="stylesheet" type="text/css" href="static/style.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              fontFamily: {
+                sans: ["Poppins", "sans-serif"]
+              },
+              spacing: {
+                180: "32rem"
+              }
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body style="font-family: arial, sans-serif">
+    <script src="https://unpkg.com/htmx.org@1.1.0"></script>
+    <script>
+      document.body.addEventListener("htmx:configRequest", event => {
+        event.detail.headers["X-CSRFToken"] = "{{ csrf_token() }}"
+      })
+    </script>
+  
+
+    <!-- Global Container -->
+    <div class="container mx-auto max-w-screen-2xl p-2 md:p-10">
+      <h4 class="text-2xl mb-2 font-bold text-left lg:max-w-lg">MOOC Courses (edX)</h4>
+      <select class="text-m" id="courseDropdown" onchange="cb(this.value, true)">
+        {% for course in courses %}
+        <option value="{{ course }}">{{ course }}</option>
+        {% endfor %}
+      </select>
+      <a class="ml-6 mr-0">Auto zoom:</a> <input class="ml-0" type="radio" id="zoom_off" name="plot_autozoom" value="off" checked="checked" />   <label for="off">Off</label>   <input type="radio" id="zoom_on" name="plot_autozoom" value="on" />   <label for="on">On</label><br />
+      <br />
+      <br />
+      <!-- Grid Container -->
+      <div class="grid gap-6 grid-cols-1 md:grid-cols-4">
+        <!-- Box 1 -->
+        <div id="course_structure" class="pl-8 pt-0 mt-0 md:row-span-3"></div>
+
+        <!-- Box 2 -->
+        <div id="chart" class="bg-gray-100 md:col-span-3"></div>
+
+        <!-- Box 3 -->
+        <div id="metadata" class="pl-0 pr-0 pt-0"></div>
+
+        <!-- Box 4 -->
+        <div id="transcript_or_quiz" class="pl-10 pr-10 pt-0 md:col-span-2"></div>
+      </div>
+    </div>
+
+    <script>
+
+      d = {{ graphJSON | safe }};
+      d.config = {'displayModeBar': false}
+      Plotly.newPlot("chart", d)
+      course_titles = {{ courses | safe }}
+      // we populate the course structure box with the first course
+      course_title = course_titles[0]
+
+      cb(course_title, false)
+
+      var scatter_plot = document.getElementById("chart")
+      // we add a plotly click event listener to the chart
+      scatter_plot.on("plotly_click", function (data) {
+        var uid = ""
+
+        uid = data.points[0].data.uid
+        current_idx_marker = 0
+        current_idx_marker = data.points[0]["fullData"].index
+        current_marker = data.points[0]["data"].marker
+        uid = uid.substring(0, uid.length - 4);
+        hightlight_point(course_title, uid)
+      })
+
+      scatter_plot.on('plotly_doubleclick', function() {
+        $("#zoom_on").prop("checked", true)
+      });
+
+      $("#zoom_off").click( function(){
+      turn_autozoom_off()
+  });
+
+      $("#zoom_on").click( function(){
+      turn_autozoom_on()
+  });
+    </script>
+  </body>
+</html>
